@@ -1,20 +1,22 @@
 from edge import Edge
 import numpy as np
+from math import sin, cos 
 
 class Camera:
 
     def __init__(self, half_width: float, half_height: float, depth: float):
         self._half_width = half_width
         self._half_height = half_height
-        self._view_center = np.array([0, 0, 0])
-        self._x_rotation = np.identity(3, dtype=float)
-        self._y_rotation = np.identity(3, dtype=float)
-        self._z_rotation = np.identity(3, dtype=float)
-        self._rotation = self.calculate_rotation()
+        self._view_center = np.array([0, 0, 0], dtype=float)
+        # self._x_rotation = np.identity(3, dtype=float)
+        # self._y_rotation = np.identity(3, dtype=float)
+        # self._z_rotation = np.identity(3, dtype=float)
+        # self._rotation = self.calculate_rotation()
+        self._rotation = np.identity(3, dtype=float)
         self._depth = depth
-        self._focal_point = np.array([0, 0, -depth], dtype=float)
+        # self._focal_point = np.array([0, 0, -depth], dtype=float)
 
-    # find intersection with viewing plane in camera space (d = 0)
+    # find intersection with viewing plane in camera space
     def plane_intersection(self, point):
         # -t = d / (d + z)
         nt = self._depth / (self._depth + point[2])
@@ -24,9 +26,20 @@ class Camera:
     def move(self, translation):
         self._view_center += translation
 
+    def x_rotation(self, angle):
+        R = np.array([[1, 0, 0], [0, cos(angle), -sin(angle)], [0, sin(angle), cos(angle)]], dtype=float)
+        self._rotation @= R
 
-    def calculate_rotation(self):
-        return self._x_rotation @ self._y_rotation @ self._z_rotation
+    def y_rotation(self, angle):
+        R = np.array([[cos(angle), 0, sin(angle)], [0, 1, 0], [-sin(angle), 0, cos(angle)]], dtype=float)
+        self._rotation @= R
+
+    def z_rotation(self, angle):
+        R = np.array([[cos(angle), -sin(angle), 0], [sin(angle), cos(angle), 0], [0, 0, 1]], dtype=float)
+        self._rotation @= R
+
+    # def calculate_rotation(self):
+    #     return self._x_rotation @ self._y_rotation @ self._z_rotation
 
     def scene_to_camera_space(self, point):
         return self._rotation @ point - self._view_center 
@@ -54,5 +67,10 @@ class Camera:
                 res.append(edge_in_camera)
         return res
 
-    def __repr__(self):
-        return f'Camera\n    view_center: {self._view_center}\n    focal_point: {self._focal_point}\n    rotation: \n{self._rotation}\n'
+    def camera_to_display_space(self, point, display_half_width, display_half_height):
+        x = point[0] * display_half_width / self._half_width + display_half_width
+        y = point[1] * display_half_height / self._half_height + display_half_height
+        return x, y
+
+    # def __repr__(self):
+    #     return f'Camera\n    view_center: {self._view_center}\n    focal_point: {self._focal_point}\n    rotation: \n{self._rotation}\n'
