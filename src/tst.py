@@ -1,8 +1,5 @@
 import numpy as np
-from vector import Vector
 
-p = Vector(1, 2, 3)
-p.x += 10
-p * 10.0
-print(p.x)
-print(p.z)
+a = np.array([1, 2, 3])
+b = np.identity(3)
+print(a @ b)

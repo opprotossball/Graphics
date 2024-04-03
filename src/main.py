@@ -1,6 +1,5 @@
 import pygame
 from utils import load_scene
-from vector import Vector
 from camera import Camera
 
 pygame.init()
@@ -12,10 +11,8 @@ running = True
 scene_path = './data/scene1.csv'
 
 # camera settings
-cam_coords = Vector(20.0, 0, 0)
 cam_depth = 10.0
-n = Vector(-1.0, 0, 0)
-camera = Camera(100.0, 100.0, cam_depth, cam_coords, n)
+camera = Camera(100.0, 100.0, cam_depth)
 print(camera)
 scene = load_scene(scene_path)
 

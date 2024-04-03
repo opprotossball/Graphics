@@ -1,62 +1,48 @@
 from edge import Edge
-from vector import Vector
-from utils import dot
+import numpy as np
 
 class Camera:
 
-    def __init__(self, half_width: float, half_height: float, depth: float, position: Vector, normal: Vector):
+    def __init__(self, half_width: float, half_height: float, depth: float):
         self._half_width = half_width
         self._half_height = half_height
+        self._view_center = np.array([0, 0, 0])
+        self._x_rotation = np.identity(3, dtype=float)
+        self._y_rotation = np.identity(3, dtype=float)
+        self._z_rotation = np.identity(3, dtype=float)
+        self._rotation = self.calculate_rotation()
         self._depth = depth
-        self._pos = position
-        self._normal = normal
-        self._view_center = self.calculate_view_center()
-        self._d = self.calculate_d()
-
-    def get_pos(self) -> Vector:
-        return self._pos
-    
-    def set_pos(self, value: Vector) -> None:
-        self._pos = value
-        self.calculate_view_center()
-        self.calculate_d()
-    
-    def calculate_view_center(self) -> float:
-        return self._pos + (self._normal * self._depth)
-    
-    def calculate_d(self) -> float:
-        # print('calc d: ', (self._view_center.x / self._normal.x == self._view_center.y / self._normal.y))
-        # return self._view_center.x / self._normal.x 
-        return 10.0
-
-    def is_on_correct_side(self, point: Vector) -> bool:
-        diff = point - self._view_center
-        return dot(diff, self._normal) >= 0
+        self._focal_point = np.array([0, 0, -depth], dtype=float)
 
     # find intersection with viewing plane in camera space (d = 0)
-    def plane_intersection(self, point: Vector) -> Vector:
-        ba = self._pos - point
-        n_dot_a = dot(self._normal, point)
-        n_dot_ba = dot(self._normal, ba)
-        return point + (ba * ((self._d - n_dot_a) / n_dot_ba))
+    def plane_intersection(self, point):
+        # -t = d / (d + z)
+        nt = self._depth / (self._depth + point[2])
+        # p' = (0 - tx, 0 - ty, -d - tz - td)
+        return np.array([nt * point[0], nt * point[1], 0], dtype=float)
 
-    def point_to_camera_space(self, point: Vector) -> Vector:
-        print(point)
-        res = point - self._view_center
-        if res.z != 0:
-            raise TypeError('Point not in viewing plane')
-        return res
+    def move(self, translation):
+        self._view_center += translation
+
+
+    def calculate_rotation(self):
+        return self._x_rotation @ self._y_rotation @ self._z_rotation
+
+    def scene_to_camera_space(self, point):
+        return self._rotation @ point - self._view_center 
     
     def edge_to_camera_space(self, edge: Edge):
-        # check if both ends are on the correct side of plane
-        if not self.is_on_correct_side(edge.a) or not self.is_on_correct_side(edge.b):
+        a = self.scene_to_camera_space(edge.a)
+        b = self.scene_to_camera_space(edge.b)
+        # check if both ends are on the correct side of plane (a.z >= 0 && b.z >= 0) 
+        if a[2] < 0 or b[2] < 0:
             return None
-        ai = self.point_to_camera_space(self.plane_intersection(edge.a))
-        # check if point is in frame
-        if abs(ai.x) > self._half_width or abs(ai.y) > self._half_height:
+        ai = self.plane_intersection(a)
+        # check if points fit in frame
+        if abs(ai[0]) > self._half_width or abs(ai[1]) > self._half_height:
             return None 
-        bi = self.point_to_camera_space(self.plane_intersection(edge.b))
-        if abs(bi.x) > self._half_width or abs(bi.y) > self._half_height:
+        bi = self.plane_intersection(b)
+        if abs(bi[0]) > self._half_width or abs(bi[1]) > self._half_height:
             return None
         return Edge(ai, bi)
     
@@ -69,4 +55,4 @@ class Camera:
         return res
 
     def __repr__(self):
-        return f'Camera\n    pos: {self._pos}\n    normal: {self._normal}\n    view_center: {self._view_center}\n    d: {self._d}'
+        return f'Camera\n    view_center: {self._view_center}\n    focal_point: {self._focal_point}\n    rotation: \n{self._rotation}\n'

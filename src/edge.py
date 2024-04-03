@@ -1,8 +1,6 @@
-from vector import Vector
-
 class Edge:
     
-    def __init__(self, a: Vector, b: Vector):
+    def __init__(self, a, b):
         self.a = a
         self.b = b
 
