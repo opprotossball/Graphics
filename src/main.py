@@ -21,7 +21,7 @@ print(camera)
 scene = load_scene(scene_path)
 
 move_speed = 0.01
-rotation_speed = 0.0001
+rotation_speed = 0.001
 
 while (running):
 
@@ -41,9 +41,9 @@ while (running):
     if ks[pygame.K_a]:
         tr[0] -= move_speed * dt
     if ks[pygame.K_UP]:
-        tr[1] += move_speed * dt
-    if ks[pygame.K_DOWN]:
         tr[1] -= move_speed * dt
+    if ks[pygame.K_DOWN]:
+        tr[1] += move_speed * dt
     if ks[pygame.K_w]:
         tr[2] += move_speed * dt
     if ks[pygame.K_s]:
@@ -56,6 +56,14 @@ while (running):
         camera.x_rotation(angle)
     if ks[pygame.K_2]:
         camera.x_rotation(-angle)
+    if ks[pygame.K_3]:
+        camera.y_rotation(angle)
+    if ks[pygame.K_4]:
+        camera.y_rotation(-angle)
+    if ks[pygame.K_5]:
+        camera.z_rotation(angle)
+    if ks[pygame.K_6]:
+        camera.z_rotation(-angle)
 
     for edge in camera.shot_scene(scene):        
         a = camera.camera_to_display_space(edge.a, screen_w / 2, screen_h / 2)
