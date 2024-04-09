@@ -21,8 +21,8 @@ scene = scenes.cubes((10, 10, 10), 10, 30, 4)
 # camera settings
 cam_depth = 0.1
 move_speed = 0.05
-rotation_speed = 5e-4
-zoom_speed = 5e-5
+rotation_speed = 1e-3
+zoom_speed = 1e-4
 camera = Camera(0.1, 0.1, cam_depth)
 
 while (running):

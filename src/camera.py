@@ -53,7 +53,7 @@ class Camera:
     def edge_to_camera_space(self, edge: Edge):
         a = self.scene_to_camera_space(edge.a)
         b = self.scene_to_camera_space(edge.b)
-        # check if both ends are on the correct side of plane (a.z >= 0 && b.z >= 0) 
+        # check if both ends are on the correct side of plane 
         if a[2] <= self._depth or b[2] <= self._depth:
             return None
         ai = self.plane_intersection(a)
