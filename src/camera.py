@@ -54,16 +54,10 @@ class Camera:
         a = self.scene_to_camera_space(edge.a)
         b = self.scene_to_camera_space(edge.b)
         # check if both ends are on the correct side of plane (a.z >= 0 && b.z >= 0) 
-        # if a[2] <= 0 or b[2] <= 0:
         if a[2] <= self._depth or b[2] <= self._depth:
             return None
         ai = self.plane_intersection(a)
-        # check if points fit in frame
-        if abs(ai[0]) > self.half_width or abs(ai[1]) > self.half_height:
-            return None 
         bi = self.plane_intersection(b)
-        if abs(bi[0]) > self.half_width or abs(bi[1]) > self.half_height:
-            return None
         return Edge(ai, bi)
     
     def shot_scene(self, scene: list[Edge]) -> list[Edge]:

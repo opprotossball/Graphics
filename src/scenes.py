@@ -41,5 +41,6 @@ def cubes(start, size, gap, n) -> list[Edge]:
             for z in range(n):
                 cube(p, size)
                 p.goto(sx + x * (gap + size), sy + y * (gap + size), sz + z * (gap + size))
+    cube(p, size)
     return p.edges
     
