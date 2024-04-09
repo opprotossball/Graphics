@@ -59,13 +59,12 @@ class Camera:
             return None
         ai = self.plane_intersection(a)
         # check if points fit in frame
-        # if abs(ai[0]) > self.half_width or abs(ai[1]) > self.half_height:
-        #     return None 
+        if abs(ai[0]) > self.half_width or abs(ai[1]) > self.half_height:
+            return None 
         bi = self.plane_intersection(b)
-        # if abs(bi[0]) > self.half_width or abs(bi[1]) > self.half_height:
-        #     return None
-        clipped = self.clip(Edge(ai, bi))
-        return clipped
+        if abs(bi[0]) > self.half_width or abs(bi[1]) > self.half_height:
+            return None
+        return Edge(ai, bi)
     
     def shot_scene(self, scene: list[Edge]) -> list[Edge]:
         res = []
@@ -77,79 +76,6 @@ class Camera:
 
     def in_view(self, point) -> bool:
         return abs(point[0]) < self.half_width and abs(point[1]) < self.half_height
-
-    def clip_bottom(self, x1, y1, x2, y2):
-        if y1 > -self.half_height:
-            return None
-        dx = x2 - x1
-        dy = y2 - y1
-        t = (self.half_height - y1) / dy
-        x = x1 + t * dx
-        if abs(x) < self.half_width:
-            print('bottom')
-            return x, self.half_height
-        return None
-    
-    def clip_top(self, x1, y1, x2, y2):
-        if y1 < self.half_height:
-            return None
-        dx = x2 - x1
-        dy = y2 - y1
-        t = (-self.half_height - y1) / dy
-        x = x1 + t * dx
-        if abs(x) < self.half_width:
-            print('top')
-            return x, -self.half_height
-        return None
-    
-    def clip_right(self, x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
-        t = (self.half_width - x1) / dx
-        y = y1 + t * dy
-        if (abs(y) < self.half_height):
-            print('right')
-            return self.half_width, y
-        return None
-    
-    def clip_left(self, x1, y1, x2, y2):
-        dx = x2 - x1
-        dy = y2 - y1
-        t = (-self.half_width - x1) / dx
-        y = y1 + t * dy
-        if (abs(y) < self.half_height):
-            print('left')
-            return -self.half_width, y
-        return None
-
-    def clip(self, edge: Edge) -> Edge:
-        res = Edge(edge.a, edge.b)
-        x1 = edge.a[0]
-        y1 = edge.a[1]
-        x2 = edge.b[0]
-        y2 = edge.b[1]
-        clips = [self.clip_bottom, self.clip_top, self.clip_right, self.clip_left]
-        # point b
-        if not self.in_view(edge.b):
-            clipped = None
-            for c in clips:
-                clipped = c(x1, y1, x2, y2)
-                if clipped is not None:
-                    break
-            else:
-                return None
-            res.b[0], res.b[1] = clipped
-        # point a
-        if not self.in_view(edge.a):
-            clipped = None
-            for c in clips:
-                clipped = c(x2, y2, x1, y1)
-                if clipped is not None:
-                    break
-            else:
-                return None
-            res.a[0], res.a[1] = clipped
-        return res
 
     def camera_to_display_space(self, point, display_half_width, display_half_height):
         x = point[0] * display_half_width / self.half_width + display_half_width
