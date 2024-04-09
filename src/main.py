@@ -1,9 +1,10 @@
 import pygame
-from utils import load_scene
+from scenes import load_scene
+import scenes
 from camera import Camera
-import time
 import numpy as np
 
+# pygame
 pygame.init()
 (screen_w, screen_h) = (900, 900)
 background = (50, 50, 50)
@@ -12,16 +13,17 @@ pygame.display.set_caption('VCam')
 clock = pygame.time.Clock()
 running = True
 
+# create or load scene
 scene_path = './data/scene1.csv'
+scene = load_scene(scene_path)
+# scene = scenes.cubes((10, 10, 10), 10, 30, 3)
 
 # camera settings
-cam_depth = 20.0
-camera = Camera(20.0, 20.0, cam_depth)
-print(camera)
-scene = load_scene(scene_path)
-
-move_speed = 0.01
-rotation_speed = 0.001
+cam_depth = 0.1
+move_speed = 0.03
+rotation_speed = 5e-4
+zoom_speed = 5e-5
+camera = Camera(0.1, 0.1, cam_depth)
 
 while (running):
 
@@ -34,6 +36,7 @@ while (running):
     screen.fill(background)
 
     ks = pygame.key.get_pressed()
+
     # translation
     tr = np.array([0, 0, 0], dtype=float)
     if ks[pygame.K_d]:
@@ -53,20 +56,27 @@ while (running):
     # rotation
     angle = rotation_speed * dt
     if ks[pygame.K_1]:
-        camera.x_rotation(angle)
+        camera.rotate_x(angle)
     if ks[pygame.K_2]:
-        camera.x_rotation(-angle)
+        camera.rotate_x(-angle)
     if ks[pygame.K_3]:
-        camera.y_rotation(angle)
+        camera.rotate_y(angle)
     if ks[pygame.K_4]:
-        camera.y_rotation(-angle)
+        camera.rotate_y(-angle)
     if ks[pygame.K_5]:
-        camera.z_rotation(angle)
+        camera.rotate_z(angle)
     if ks[pygame.K_6]:
-        camera.z_rotation(-angle)
+        camera.rotate_z(-angle)
+
+    # zoom
+    if ks[pygame.K_EQUALS]:
+        camera.zoom(zoom_speed * dt)
+    if ks[pygame.K_MINUS]:
+        camera.zoom(-zoom_speed * dt)
 
     for edge in camera.shot_scene(scene):        
         a = camera.camera_to_display_space(edge.a, screen_w / 2, screen_h / 2)
         b = camera.camera_to_display_space(edge.b, screen_w / 2, screen_h / 2)
         pygame.draw.line(screen, (255, 0, 0), a, b)
+
     pygame.display.update()
