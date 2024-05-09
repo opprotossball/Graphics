@@ -1,8 +1,10 @@
 import pygame
-from scenes import load_scene
 import scenes
 from camera import Camera
+from polygon import Polygon
 import numpy as np
+
+tstsc = scenes.surf()
 
 # pygame
 pygame.init()
@@ -13,17 +15,12 @@ pygame.display.set_caption('VCam')
 clock = pygame.time.Clock()
 running = True
 
-# create or load scene
-# scene_path = './data/scene1.csv'
-# scene = load_scene(scene_path)
-scene = scenes.cubes((10, 10, 10), 10, 30, 4)
-
 # camera settings
 cam_depth = 0.1
 move_speed = 0.05
 rotation_speed = 1e-3
 zoom_speed = 1e-4
-camera = Camera(0.1, 0.1, cam_depth)
+camera = Camera(tstsc, 0.1, 0.1, cam_depth)
 
 while (running):
 
@@ -68,15 +65,18 @@ while (running):
     if ks[pygame.K_6]:
         camera.rotate_z(-angle)
 
+    if ks[pygame.K_SPACE]:
+        camera.tst()
+
     # zoom
     if ks[pygame.K_EQUALS]:
         camera.zoom(zoom_speed * dt)
     if ks[pygame.K_MINUS]:
         camera.zoom(-zoom_speed * dt)
 
-    for edge in camera.shot_scene(scene):        
-        a = camera.camera_to_display_space(edge.a, screen_w / 2, screen_h / 2)
-        b = camera.camera_to_display_space(edge.b, screen_w / 2, screen_h / 2)
-        pygame.draw.line(screen, (255, 255, 255), a, b)
+    srfcs = camera.shot_scene()
+    for s in srfcs:
+        vertices = [camera.camera_to_display_space(p, screen_w / 2, screen_h / 2) for p in s.vertices]
+        pygame.draw.polygon(screen, s.color, vertices)
 
     pygame.display.update()

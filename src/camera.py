@@ -1,11 +1,14 @@
+from polygon import Polygon
 from edge import Edge
 import numpy as np
 from quaternion import Quaternion
+from bsp_tree import BspTree
 import rotations
 
 class Camera:
 
-    def __init__(self, half_width: float, half_height: float, depth: float, min_depth=1e-5, max_depth=1e5):
+    def __init__(self, scene: list[Polygon], half_width: float, half_height: float, depth: float, min_depth=1e-5, max_depth=1e5):
+        self.scene = scene
         self.half_width = half_width
         self.half_height = half_height
         self._view_center = np.array([0, 0, 0], dtype=float)
@@ -13,6 +16,7 @@ class Camera:
         self._min_depth = min_depth
         self._max_depth = max_depth
         self._rotation = Quaternion()
+        self._bsp_tree = BspTree(scene)
 
     # find intersection with viewing plane in camera space
     def plane_intersection(self, point):
@@ -60,13 +64,25 @@ class Camera:
         bi = self.plane_intersection(b)
         return Edge(ai, bi)
     
-    def shot_scene(self, scene: list[Edge]) -> list[Edge]:
+    def shot_scene(self) -> list[Polygon]:
         res = []
-        for edge in scene:
-            edge_in_camera = self.edge_to_camera_space(edge)
-            if edge_in_camera is not None:
-                res.append(edge_in_camera)
+        for surface in self._bsp_tree.traverse(self._view_center):
+            surface_in_camera = self.surface_to_camera_space(surface)
+            if surface_in_camera is not None:
+                res.append(surface_in_camera)
         return res
+    
+    def surface_to_camera_space(self, surface: Polygon):
+        new_vertices = []
+        for v in surface.vertices:
+            vc = self.scene_to_camera_space(v)
+            if vc[2] <= self._depth:
+                return None
+            new_vertices.append(self.plane_intersection(vc))
+        try:
+            return Polygon(new_vertices, surface.color)
+        except:
+            return None
 
     def in_view(self, point) -> bool:
         return abs(point[0]) < self.half_width and abs(point[1]) < self.half_height
@@ -75,3 +91,9 @@ class Camera:
         x = point[0] * display_half_width / self.half_width + display_half_width
         y = point[1] * display_half_height / self.half_height + display_half_height
         return x, y
+    
+    def tst(self):
+        self._bsp_tree.tst()
+        # for surface in self._bsp_tree.traverse(self._view_center):
+        #     print(surface.color)
+        print("------")
