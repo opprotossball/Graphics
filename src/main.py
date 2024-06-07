@@ -4,7 +4,9 @@ from camera import Camera
 from polygon import Polygon
 import numpy as np
 
-tstsc = scenes.surf()
+# scene = scenes.cube_line(start=(10, 10, 10), size=10, x_gap=10, y_gap=-2, z_gap=0, n=10)
+scene = scenes.offset_cubes(start=(10, 10, 10), size=10, x_gap=30, y_gap=30, z_gap=30, n=3)
+
 
 # pygame
 pygame.init()
@@ -20,7 +22,7 @@ cam_depth = 0.1
 move_speed = 0.05
 rotation_speed = 1e-3
 zoom_speed = 1e-4
-camera = Camera(tstsc, 0.1, 0.1, cam_depth)
+camera = Camera(scene, 0.1, 0.1, cam_depth)
 
 while (running):
 

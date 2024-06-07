@@ -79,10 +79,9 @@ class Camera:
             if vc[2] <= self._depth:
                 return None
             new_vertices.append(self.plane_intersection(vc))
-        try:
-            return Polygon(new_vertices, surface.color)
-        except:
+        if len(new_vertices) < 3:
             return None
+        return Polygon(new_vertices, surface.color)
 
     def in_view(self, point) -> bool:
         return abs(point[0]) < self.half_width and abs(point[1]) < self.half_height
@@ -92,8 +91,3 @@ class Camera:
         y = point[1] * display_half_height / self.half_height + display_half_height
         return x, y
     
-    def tst(self):
-        self._bsp_tree.tst()
-        # for surface in self._bsp_tree.traverse(self._view_center):
-        #     print(surface.color)
-        print("------")

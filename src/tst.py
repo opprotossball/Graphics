@@ -1,5 +1,5 @@
-def a(val, p=[]):
-    p.append(val)
+def a(v, p=[]):
+    p.append(v)
     return p
 
 for v in a(1):

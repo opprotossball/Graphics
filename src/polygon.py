@@ -1,7 +1,6 @@
 import numpy as np
 from sign import sign, Sign
 from polygon_position import PolygonPosition
-
 eps = 1e-5
 
 class Polygon:
@@ -11,7 +10,6 @@ class Polygon:
         self.color = color
         if not self.validate():
             pass
-            #raise ValueError('Vertices are no coplanar')
     
     def validate(self):
         n = len(self.vertices)
@@ -59,7 +57,34 @@ class Polygon:
                 return PolygonPosition.IN_FRONT
 
     def cut_other_polygon(self, other):
-        pass
+        front = []
+        back = []
+        for i in range(len(other.vertices)):
+            v1 = other.vertices[i - 1]
+            v2 = other.vertices[i]
+            sign1 = self.point_relative_sign(v1)
+            sign2 = self.point_relative_sign(v2)
+            # if section is lying on plane treat it as lying in front
+            if sign1 == Sign.ZERO and sign2 == Sign.ZERO:
+                sign1 = Sign.POSITIVE
+                sign2 = Sign.POSITIVE
+            # treat ZERO as lying on same side
+            if sign1 != sign2:
+                if sign1 == Sign.ZERO:
+                    sign1 = sign2
+                elif sign2 == Sign.ZERO:
+                    sign2 = sign1
+            # same side
+            if sign1 == sign2:
+                if sign1 == Sign.POSITIVE:
+                    front.append(v1)
+                    front.append(v2)
+                else:
+                    back.append(v1)
+                    back.append(v2)
+            # different sides
+            else:
+                pass
 
     def point_relative_sign(self, point):
         return sign(np.dot(self.normal, point) + self.d)
